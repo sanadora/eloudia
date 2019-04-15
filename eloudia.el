@@ -62,3 +62,22 @@ space to the other records respective section."
 
 (with-current-buffer "*scratch*"
   (insert (records->string (format-clusters-info clusters))))
+
+
+
+(setq tabulated-list-entries
+      '((1 ("Ken" "Ubuntu" 5))
+	(2 ("Lotso" "Ubuntu plus" 2))))
+
+(define-derived-mode eloudia-mode tabulated-list-mode "Eloudia"
+  "Major mode for managing Cloudia"
+  (setq clusters-tabulated-list-format
+      ['("CL Name" 20 t)
+       '("CL Type" 20 t)
+       '("CL #nodes" 5 t)])
+  (setq tabulated-list-format clusters-tabulated-list-format)
+  (tabulated-list-init-header))
+  
+  
+	
+
