@@ -1,0 +1,5 @@
+* Eloudia
+  El objetivo principal es aprender sobre Elisp. El secundario es hacer una interfaz cómoda para ??????? basada en modos como Dired, Proced, y otros del estilo.
+  
+** Uso
+   Por ahora basta con correr ~M-x list-clusters~ y eso crea un buffer donde lista los clusters.
