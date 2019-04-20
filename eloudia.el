@@ -4,10 +4,8 @@
 (cl-defstruct pool name cluster)
 (cl-defstruct endpoint name domaingroup path pools)
 
-;; obtener data de cluster (C) /pool (P) /endpoint (E): parsear la salida del ssh o el json de un curl
+;; obtener data de cluster(C) / pool(P) / endpoint(E): parsear la salida del ssh o el json de un curl
 ;; pasar data a un modelo que representen clusters, etc.
-;; DONE generar un modelo imprimible (tener en cuenta cosas como el nombre mas largo, tamanio de la pantalla, etc)
-;; mostrar las estructuras en un buffer
 
 (defun max-length (lengths)
   (cl-reduce (function max) lengths))
@@ -43,12 +41,12 @@ space to the other records respective section."
 
 (defun cluster->record (cluster)
   "Generates a record form a cluster."
-  (list (cluster-name cluster)
-	(cluster-type cluster)))
+  (vector (cluster-name cluster)
+	  (cluster-type cluster)
+	  (cluster-nodes cluster)))
 
 (defun format-clusters-info (clusters)
   (format-records (mapcar (function cluster->record) clusters)))
-
 
 (defun record->string (record)
   (string-join record "\t"))
@@ -57,27 +55,45 @@ space to the other records respective section."
   (string-join (mapcar (function record->string) records)
 	       "\n"))
 
-(setq clusters (list (make-cluster :name "ken" :type "ubuntuyyy" :nodes 2)
-		     (make-cluster :name "lotso" :type "ubunty" :nodes 5)))
+(defun prepend-ids (records)
+  "It prepends a numeric ID for every RECORD."
+  (let (result
+	(num 0))
+    (while (not (null records))
+      (setq result (cons (list num (car records))
+			 result))
+      (setq num (1+ num))
+      (setq records (cdr records)))
+    result))
 
-(with-current-buffer "*scratch*"
-  (insert (records->string (format-clusters-info clusters))))
 
-
-
-(setq tabulated-list-entries
-      '((1 ("Ken" "Ubuntu" 5))
-	(2 ("Lotso" "Ubuntu plus" 2))))
+(setq clusters (list (make-cluster :name "ken" :type "ubuntu plux" :nodes "2")
+		     (make-cluster :name "lotso" :type "ubunty" :nodes "5")))
 
 (define-derived-mode eloudia-mode tabulated-list-mode "Eloudia"
   "Major mode for managing Cloudia"
-  (setq clusters-tabulated-list-format
-      ['("CL Name" 20 t)
-       '("CL Type" 20 t)
-       '("CL #nodes" 5 t)])
+  (setq clusters-tabulated-list-format [("Name" 20 t)
+					("Type" 20 t)
+					("#nodes" 5 t)])
   (setq tabulated-list-format clusters-tabulated-list-format)
+  (add-hook 'tabulated-list-revert-hook 'list-clusters--refresh nil t)
   (tabulated-list-init-header))
-  
-  
+
+(defun list-clusters--refresh ()
+  "Prepares the data (entries) to be displayed."
+  (setq tabulated-list-entries
+	(prepend-ids (mapcar (function cluster->record) clusters))))
+
+;;;;;;;;;;;;;;;;;;;;;
+;; listing command ;;
+;;;;;;;;;;;;;;;;;;;;;
+(defun list-clusters ()
+  "Creates (or switches to) a buffer with a listing of the clusters."
+  (interactive)
+  (switch-to-buffer (get-buffer-create "*eloudia-listing*"))
+  (eloudia-mode)
+  (list-clusters--refresh)
+  (tabulated-list-print t t))
+
 	
 
