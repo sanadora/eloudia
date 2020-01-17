@@ -4,22 +4,19 @@
 (cl-defstruct pool name cluster)
 (cl-defstruct endpoint name domaingroup path pools)
 
-;; obtener data de cluster(C) / pool(P) / endpoint(E): parsear la salida del ssh o el json de un curl
+;; obtener data de cluster(C) / pool(P) / endpoint(E): parsear la salida del ssh
 ;; pasar data a un modelo que representen clusters, etc.
 
-(defun max-length (lengths)
-  (cl-reduce (function max) lengths))
-(defun string-lengths (strings)
-  (cl-mapcar (function length) strings))
+(defun length-of-lengthiest-section (& records-section)
+  "Returns the max length, given a list of the same section of some records."
+  (cl-reduce 'max
+	     (cl-mapcar 'length records-section)))
 
 (defun max-records-lengths (records)
-  "Generates a list with the max lengths of each record section of RECORDS.
-It traverses the first section of each record and computes the length of the largest.
+  "Generates a list with the max length of each section of the RECORDS.
+It traverses the first section of each record and  the length of the largest.
 Then with the second, third, and so on... and returns a record with each section's result."
-  (apply (function cl-mapcar)
-	 (cons (lambda (&rest records-section)
-		 (max-length (string-lengths records-section)))
-	       records)))
+  (apply 'cl-mapcar 'length-of-lengthiest-section records))
 
 (defun format-record (record format-lengths)
   "Generates a record with its strings stretched to match FORMAT-LENGTH."
@@ -46,13 +43,13 @@ space to the other records respective section."
 	  (cluster-nodes cluster)))
 
 (defun format-clusters-info (clusters)
-  (format-records (mapcar (function cluster->record) clusters)))
+  (format-records (mapcar 'cluster->record clusters)))
 
 (defun record->string (record)
   (string-join record "\t"))
 
 (defun records->string (records)
-  (string-join (mapcar (function record->string) records)
+  (string-join (mapcar 'record->string records)
 	       "\n"))
 
 (defun prepend-ids (records)
