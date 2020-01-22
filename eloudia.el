@@ -1,5 +1,12 @@
+;;; eloudia.el --- interfaz para CloudIA
+
+;;; Commentary:
+;; 
+
 (require 'cl-lib)
  
+;;; Code:
+
 (cl-defstruct cluster name type nodes)
 (cl-defstruct pool name cluster)
 (cl-defstruct endpoint name domaingroup path pools)
@@ -7,26 +14,26 @@
 ;; obtener data de cluster(C) / pool(P) / endpoint(E): parsear la salida del ssh
 ;; pasar data a un modelo que representen clusters, etc.
 
-(defun length-of-lengthiest-section (& records-section)
-  "Returns the max length, given a list of the same section of some records."
+(defun length-of-lengthiest-section (&rest records-section)
+  "Return the max length, given a list of the same section of some records."
   (cl-reduce 'max
 	     (cl-mapcar 'length records-section)))
 
 (defun max-records-lengths (records)
-  "Generates a list with the max length of each section of the RECORDS.
+  "Generate a list with the max length of each section of the RECORDS.
 It traverses the first section of each record and  the length of the largest.
 Then with the second, third, and so on... and returns a record with each section's result."
   (apply 'cl-mapcar 'length-of-lengthiest-section records))
 
 (defun format-record (record format-lengths)
-  "Generates a record with its strings stretched to match FORMAT-LENGTH."
+  "Generate a RECORD with its strings stretched to match FORMAT-LENGTHS."
   (cl-mapcar (lambda (rec-section section-length)
 	       (format (format "%%-%ds" section-length) rec-section))
 	     record
 	     format-lengths))
 
 (defun format-records (records)
-  "Generates a list of records with normalized lengths.
+  "Generate a list of RECORDS with normalized lengths.
 It determines the max length of a record section, and adds aditional
 space to the other records respective section."
   (let* ((record-of-max-lengths
@@ -37,7 +44,7 @@ space to the other records respective section."
 			 result)))))
 
 (defun cluster->record (cluster)
-  "Generates a record form a cluster."
+  "Generate a record form a CLUSTER."
   (vector (cluster-name cluster)
 	  (cluster-type cluster)
 	  (cluster-nodes cluster)))
@@ -94,3 +101,7 @@ space to the other records respective section."
 
 	
 
+
+(provide 'eloudia)
+
+;;; eloudia.el ends here
